@@ -371,18 +371,25 @@ export async function spin(
   return { machine: machine.id, version: machine.version, stops, window, ...payOut(machine, window, lineBet, free) };
 }
 
-/** One line a person can read without opening the log: "Three sevens", "Nothing". */
+/**
+ * One line a person can read without opening the log: "Three sevens", "Nothing".
+ *
+ * Twenty lines can pay at once, and naming only the best of them beside a total
+ * that came from all of them would read as though the best one paid the lot. So
+ * when more than one line pays, the line says so.
+ */
 export function describe(machine: Machine, result: Pick<Spin, "lines" | "scatter">): string {
   const best = [...result.lines].sort((a, b) => b.pays - a.pays)[0];
   const words = ["", "One", "Two", "Three", "Four", "Five"];
   const plural: Partial<Record<Pip, string>> = { cherry: "cherries", bar: "bars", bell: "bells", star: "stars", seven: "sevens", chip: "chips" };
+  const parts: string[] = [];
   if (best) {
     const name = best.run === 1 ? best.symbol : plural[best.symbol] ?? best.symbol;
-    const line = `${words[best.run]} ${name}`;
-    return result.scatter?.count ? `${line}, ${words[result.scatter.count]} chips` : line;
+    parts.push(`${words[best.run]} ${name}`);
+    if (result.lines.length > 1) parts.push(`${result.lines.length} lines`);
   }
-  if (result.scatter?.count) return `${words[result.scatter.count]} chips`;
-  return "Nothing";
+  if (result.scatter?.count) parts.push(`${words[result.scatter.count]} chips`);
+  return parts.length ? parts.join(", ") : "Nothing";
 }
 
 /** 1'000 — Swiss grouping, formatted by hand so server and browser agree. */

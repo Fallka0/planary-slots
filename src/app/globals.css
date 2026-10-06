@@ -302,16 +302,15 @@ ul, ol { padding: 0; list-style: none; }
 .cab-print { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 .cab-plate {
   position: absolute;
-  right: -2%;
-  top: 50%;
+  right: 2%;
+  top: -14%;
   font-family: var(--font-poster);
   font-weight: 900;
-  font-size: min(58vh, 460px);
+  font-size: clamp(190px, 26vw, 330px);
   line-height: 0.78;
-  transform: translateY(-52%);
 }
-.plate-a { color: var(--ink); opacity: 0.1; translate: 13px 11px; }
-.plate-b { color: #000; opacity: 0.16; mix-blend-mode: multiply; }
+.plate-a { color: var(--ink); opacity: 0.17; translate: 14px 12px; }
+.plate-b { color: #000; opacity: 0.22; mix-blend-mode: multiply; }
 
 .cab-head { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
 .cab-head h1 { font-size: clamp(2rem, 3.4vw, 2.9rem); }
@@ -325,11 +324,19 @@ ul, ol { padding: 0; list-style: none; }
   display: grid;
   grid-template-columns: repeat(var(--reels), minmax(0, 1fr));
   gap: 10px;
-  --cell: clamp(62px, 9.2vw, 108px);
+  --cell: clamp(62px, 9vw, 130px);
+  /* Wide enough for square windows and no wider: a column stretched to fill
+     the cabinet reads as a label, not as a drum. The shoulders either side
+     are what a real cabinet has. */
+  max-width: calc(var(--reels) * var(--cell) + (var(--reels) - 1) * 10px + 28px);
+  margin-inline: auto;
   padding: 14px;
   border-radius: 22px;
   background: color-mix(in srgb, #000 42%, var(--field));
 }
+/* A three-reel machine is a narrower cabinet with bigger windows, not a
+   five-reel one with three of them. */
+.reels[data-reels="3"] { --cell: clamp(90px, 14.5vw, 186px); }
 .reel {
   position: relative;
   height: calc(var(--rows) * var(--cell));
@@ -373,15 +380,19 @@ ul, ol { padding: 0; list-style: none; }
   to { background: var(--bulb); }
 }
 
-.paylines { position: absolute; inset: 14px; z-index: 2; pointer-events: none; }
-.paylines polyline {
-  fill: none;
-  stroke: var(--bulb);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.9;
+/* An <svg> is a replaced element: given only insets it sizes itself from its
+   own aspect ratio and overruns the drums, so the box is stated outright. */
+.paylines {
+  position: absolute;
+  inset: 14px;
+  width: calc(100% - 28px);
+  height: calc(100% - 28px);
+  z-index: 2;
+  pointer-events: none;
 }
+.paylines polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.line-under { stroke: color-mix(in srgb, #000 55%, var(--field)); stroke-width: 11; }
+.line-over { stroke: var(--bulb); stroke-width: 4; }
 
 /* ── What just happened ────────────────────────── */
 
@@ -520,6 +531,7 @@ ul, ol { padding: 0; list-style: none; }
   font-weight: 700;
 }
 
+.pay-rule { color: var(--text-2); font-size: 0.84rem; }
 .pay-grid { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .pay-grid th, .pay-grid td { padding: 7px 4px; text-align: right; }
 .pay-grid thead th { color: var(--text-3); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -640,8 +652,8 @@ ul, ol { padding: 0; list-style: none; }
   .parlour-head h1 { font-size: 2.6rem; }
   .side { grid-template-columns: minmax(0, 1fr); }
   .cab { padding: 18px 16px 16px; border-radius: 24px; }
-  .reels { --cell: clamp(54px, 17vw, 96px); gap: 7px; padding: 10px; }
-  .paylines { inset: 10px; }
+  .reels { --cell: clamp(46px, 15vw, 96px); gap: 7px; padding: 10px; }
+  .paylines { inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px); }
   .stake { grid-template-columns: minmax(0, 1fr); padding: 16px; }
   .stake-act { flex-direction: column; align-items: stretch; }
   .lever { min-width: 0; }

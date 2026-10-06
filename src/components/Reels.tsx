@@ -94,8 +94,16 @@ export function Reels({
     };
   }, [result, reduced, cabinet.reels.length, onSettled]);
 
-  /** What is on the drums at rest: the last result, or the strips as they came. */
-  const resting = useMemo(() => (landed ? landed.window : windowAt(cabinet, cabinet.reels.map(() => 0))), [landed, cabinet]);
+  /**
+   * What is on the drums at rest: the last result, or — before the first spin —
+   * a fixed spread across the strips. Fixed rather than random, so the server
+   * and the browser draw the same machine; spread rather than stop zero, so a
+   * machine nobody has touched does not look like five identical reels.
+   */
+  const resting = useMemo(
+    () => (landed ? landed.window : windowAt(cabinet, cabinet.reels.map((reel, i) => (i * 7 + 2) % reel.length))),
+    [landed, cabinet],
+  );
 
   /** The blur, rebuilt for each spin so two spins never look identical. */
   const blur = useMemo(
@@ -125,6 +133,7 @@ export function Reels({
     <div
       className="reels"
       data-stage={stage}
+      data-reels={reels}
       style={{ "--reels": reels, "--rows": rows } as React.CSSProperties}
       role="img"
       aria-label={
@@ -170,13 +179,20 @@ export function Reels({
         );
       })}
 
-      {/* The lines that paid, lit like bulbs behind the glass. */}
+      {/* The lines that paid. Two plates, like everything else printed here:
+          the cells they cross are already lit cream, so a cream line alone
+          would vanish on them, and a dark one would vanish in the gaps. */}
       {landed?.lines.length ? (
         <svg className="paylines" viewBox={`0 0 ${reels * 10} ${rows * 10}`} preserveAspectRatio="none" aria-hidden="true">
           {landed.lines.map((win) => {
             const rowsOf = cabinet.lines[win.line];
             const points = Array.from({ length: win.run }, (_, reel) => `${reel * 10 + 5},${rowsOf[reel] * 10 + 5}`).join(" ");
-            return <polyline key={win.line} points={points} vectorEffect="non-scaling-stroke" />;
+            return (
+              <g key={win.line}>
+                <polyline className="line-under" points={points} vectorEffect="non-scaling-stroke" />
+                <polyline className="line-over" points={points} vectorEffect="non-scaling-stroke" />
+              </g>
+            );
           })}
         </svg>
       ) : null}

@@ -46,6 +46,10 @@ export function Paytable({ cabinet, lineBet }: { cabinet: Machine; lineBet: numb
 
       {open ? (
         <div className="panel-body">
+          <p className="pay-rule">
+            A line pays for {runs.length > 1 ? `${runs.slice(0, -1).join(", ")} or ${runs[runs.length - 1]}` : runs[0]} matching symbols, counted
+            from the leftmost reel.
+          </p>
           <table className="pay-grid">
             <thead>
               <tr>
@@ -54,7 +58,7 @@ export function Paytable({ cabinet, lineBet }: { cabinet: Machine; lineBet: numb
                 </th>
                 {runs.map((run) => (
                   <th scope="col" key={run} className="num">
-                    {run}×
+                    {run}
                   </th>
                 ))}
                 <th scope="col" className="pay-odds">
