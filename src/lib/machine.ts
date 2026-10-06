@@ -30,14 +30,14 @@ export function fetchState(machine: string, token: string) {
 }
 
 /**
- * One spin.
+ * One round: a spin, or — with `buy` — the bonus game bought outright.
  *
  * `key` makes a retry the same spin rather than another one: if the answer is
  * lost on the way back, asking again with the same key returns the spin that
  * already happened instead of staking a second time.
  */
-export function requestSpin(machine: string, lineBet: number, token: string, key: string) {
-  return call<SpinResponse>("/v1/spin", token, { method: "POST", body: JSON.stringify({ machine, lineBet, key }) });
+export function requestSpin(machine: string, lineBet: number, token: string, key: string, buy = false) {
+  return call<SpinResponse>("/v1/spin", token, { method: "POST", body: JSON.stringify({ machine, lineBet, key, buy }) });
 }
 
 export function saveSeed(clientSeed: string, token: string) {

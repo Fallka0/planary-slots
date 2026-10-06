@@ -7,10 +7,10 @@ import type { MachineId } from "../../shared/slots";
   a halftone dot screen fading in toward the bottom, a multiply grain pass, and
   one plate printed about a dozen pixels off register.
 
-  The three covers are the three machines, not three decorations: one row of
-  three drums, a nine-window grid, and five drums at night with the house chip
-  scattered through them. A player should be able to tell which is which from
-  the poster alone.
+  The three covers are the three machines, not three decorations: a full moon
+  over the Orbit Wheel, a window of moon coins locking into place, and a
+  supernova bursting over five drums with one turned wild. A player should be
+  able to tell which is which from the poster alone.
 */
 
 function PrintDefs({ id, dot }: { id: string; dot: string }) {
@@ -39,122 +39,104 @@ function Grain({ id }: { id: string }) {
   return <rect width="600" height="800" fill="#000" filter={`url(#${id}-grain)`} opacity="0.35" style={{ mixBlendMode: "multiply" }} />;
 }
 
-/** A drum window: cream paper with a shoulder, the way a cabinet holds one. */
-function Window({ x, y, w, h, paper = "#f6eee4" }: { x: number; y: number; w: number; h: number; paper?: string }) {
-  return <rect x={x} y={y} width={w} height={h} rx={w * 0.14} fill={paper} />;
+/** Points round a centre, alternating two radii. */
+function burst(points: number, outer: number, inner: number, cx: number, cy: number) {
+  return Array.from({ length: points * 2 }, (_, i) => {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (Math.PI * i) / points - Math.PI / 2;
+    return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
+  }).join(" ");
 }
 
-function Seven({ x, y, size, fill }: { x: number; y: number; size: number; fill: string }) {
+/** A moon coin, as on the drums. */
+function Coin({ cx, cy, r, ring, paper, lit }: { cx: number; cy: number; r: number; ring: string; paper: string; lit?: boolean }) {
   return (
-    <text x={x} y={y} textAnchor="middle" fontSize={size} fontWeight="900" fontFamily="var(--font-poster)" fill={fill}>
-      7
-    </text>
-  );
-}
-
-function Cherries({ x, y, scale, ink, paper }: { x: number; y: number; scale: number; ink: string; paper: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${scale})`}>
-      <path d="M40 10C60 40 50 80 30 110M40 10C70 30 100 70 105 110" stroke={ink} strokeWidth="8" fill="none" strokeLinecap="round" />
-      <circle cx="30" cy="130" r="36" fill={ink} />
-      <circle cx="108" cy="130" r="36" fill={ink} />
-      <circle cx="20" cy="118" r="8" fill={paper} />
-      <circle cx="98" cy="118" r="8" fill={paper} />
+    <g>
+      <circle cx={cx} cy={cy} r={r} fill={lit ? "#fff3c4" : ring} />
+      <circle cx={cx} cy={cy} r={r * 0.78} fill="none" stroke={lit ? ring : paper} strokeWidth={r * 0.18} strokeDasharray={`${r * 0.25} ${r * 0.25}`} />
+      <circle cx={cx} cy={cy} r={r * 0.52} fill={lit ? ring : paper} />
+      <circle cx={cx} cy={cy + r * 0.02} r={r * 0.36} fill={lit ? "#fff3c4" : ring} />
+      <circle cx={cx + r * 0.16} cy={cy - r * 0.12} r={r * 0.3} fill={lit ? ring : paper} />
     </g>
   );
 }
 
-/** CHERRY PRESS — one row of three drums, the lever, and the cherries. */
-function CherryPress({ id }: { id: string }) {
+/** LUNAR PRESS — a full moon over the Orbit Wheel. */
+function LunarPress({ id }: { id: string }) {
+  const segments = 12;
   return (
     <>
       <rect width="600" height="800" fill="#cc1259" />
       <rect width="600" height="800" fill={`url(#${id}-dots)`} mask={`url(#${id}-fadeMask)`} />
-      {/* The cabinet, printed in two plates slightly out of line. */}
-      <rect x="212" y="208" width="360" height="330" rx="36" fill="#ffb3cf" />
-      <rect x="200" y="220" width="360" height="330" rx="36" fill="#2a0710" />
-      {[0, 1, 2].map((i) => (
-        <g key={i}>
-          <Window x={226 + i * 110} y={250} w={92} h={270} />
-          <Seven x={272 + i * 110} y={448} size={170} fill="#cc1259" />
-        </g>
+      {/* The moon, in two plates off register. */}
+      <circle cx="402" cy="210" r="150" fill="#ffb3cf" />
+      <circle cx="390" cy="222" r="150" fill="#f6eee4" />
+      {[
+        [330, 170, 26],
+        [440, 280, 18],
+        [460, 160, 14],
+        [360, 300, 10],
+      ].map(([x, y, r], i) => (
+        <circle key={i} cx={x} cy={y} r={r} fill="#cc1259" opacity="0.18" />
       ))}
-      <rect x="576" y="300" width="14" height="170" rx="7" fill="#2a0710" />
-      <circle cx="583" cy="290" r="26" fill="#f6eee4" />
-      <Cherries x={250} y={600} scale={1} ink="#b3122e" paper="#f6eee4" />
+      {/* An orbit, and the wheel riding it. */}
+      <ellipse cx="300" cy="430" rx="330" ry="70" fill="none" stroke="#2a0710" strokeWidth="8" opacity="0.6" transform="rotate(-10 300 430)" />
+      <g transform="translate(205 560)">
+        <circle r="168" fill="#2a0710" />
+        <circle r="150" fill="#f6eee4" />
+        {Array.from({ length: segments }, (_, i) => {
+          const a0 = (i * 2 * Math.PI) / segments - Math.PI / 2;
+          const a1 = ((i + 1) * 2 * Math.PI) / segments - Math.PI / 2;
+          const fill = i % 6 === 3 ? "#d9173c" : i % 2 ? "#cc1259" : "#f6eee4";
+          return (
+            <path key={i} d={`M0 0L${150 * Math.cos(a0)} ${150 * Math.sin(a0)}A150 150 0 0 1 ${150 * Math.cos(a1)} ${150 * Math.sin(a1)}Z`} fill={fill} />
+          );
+        })}
+        <circle r="40" fill="#2a0710" />
+        <path d="M0 -196 18 -160H-18z" fill="#fff3c4" />
+      </g>
+      <text x="580" y="770" textAnchor="end" fontSize="104" fontWeight="900" fontFamily="var(--font-poster)" fill="#fff3c4" letterSpacing="-2">
+        LUNAR
+      </text>
     </>
   );
 }
 
-/** NINE WINDOW — the three-by-three grid, with one line drawn through it. */
-function NineWindow({ id }: { id: string }) {
+/** NINE MOONS — a window of moon coins, some of them locked. */
+function NineMoons({ id }: { id: string }) {
   const cell = 128;
   const left = 150;
-  const top = 212;
-  // The grid as the machine reads it: columns are reels, rows are rows.
-  const grid: ("seven" | "bar" | "bell" | "star" | "cherry")[][] = [
-    ["bell", "seven", "bar"],
-    ["star", "seven", "cherry"],
-    ["cherry", "seven", "bell"],
-  ];
-  const ink = "#2438b8";
+  const top = 196;
+  const lit = new Set(["0-0", "1-1", "2-0", "2-2", "0-2"]);
   return (
     <>
       <rect width="600" height="800" fill="#2438b8" />
       <rect width="600" height="800" fill={`url(#${id}-dots)`} mask={`url(#${id}-fadeMask)`} />
       <rect x={left - 26} y={top - 14} width={cell * 3 + 40} height={cell * 3 + 40} rx="34" fill="#8ea4ff" />
       <rect x={left - 38} y={top - 2} width={cell * 3 + 40} height={cell * 3 + 40} rx="34" fill="#0f1a52" />
-      {grid.map((column, c) =>
-        column.map((pip, r) => (
-          <g key={`${c}-${r}`}>
-            <Window x={left - 24 + c * cell} y={top + 14 + r * cell} w={cell - 18} h={cell - 18} />
-            {pip === "seven" ? <Seven x={left + 31 + c * cell} y={top + 106 + r * cell} size={104} fill={ink} /> : null}
-            {pip === "bar" ? (
-              <>
-                <rect x={left - 8 + c * cell} y={top + 56 + r * cell} width={78} height={28} rx="7" fill={ink} />
-                <text
-                  x={left + 31 + c * cell}
-                  y={top + 78 + r * cell}
-                  textAnchor="middle"
-                  fontSize="22"
-                  fontWeight="900"
-                  fontFamily="var(--font-poster)"
-                  fill="#f6eee4"
-                >
-                  BAR
-                </text>
-              </>
-            ) : null}
-            {pip === "bell" ? (
-              <g transform={`translate(${left + 1 + c * cell} ${top + 36 + r * cell}) scale(0.6)`} fill={ink}>
-                <path d="M50 14c-16 0-26 11-26 28 0 18-5 26-10 32h72c-5-6-10-14-10-32 0-17-10-28-26-28z" />
-                <circle cx="50" cy="12" r="7" />
-                <path d="M38 80a12 12 0 0 0 24 0z" />
-              </g>
-            ) : null}
-            {pip === "star" ? (
-              <path
-                d="M50 10 61 38 92 40 68 59 76 90 50 73 24 90 32 59 8 40 39 38z"
-                fill={ink}
-                transform={`translate(${left + 1 + c * cell} ${top + 36 + r * cell}) scale(0.6)`}
-              />
-            ) : null}
-            {pip === "cherry" ? <Cherries x={left - 4 + c * cell} y={top + 30 + r * cell} scale={0.52} ink={ink} paper="#f6eee4" /> : null}
-          </g>
-        )),
+      {[0, 1, 2].map((c) =>
+        [0, 1, 2].map((r) => {
+          const on = lit.has(`${c}-${r}`);
+          return (
+            <g key={`${c}-${r}`}>
+              <rect x={left - 24 + c * cell} y={top + 14 + r * cell} width={cell - 18} height={cell - 18} rx="16" fill={on ? "#f6eee4" : "#1b2a8f"} />
+              {on ? <Coin cx={left + 31 + c * cell} cy={top + 69 + r * cell} r={44} ring="#2438b8" paper="#f6eee4" lit={c === 1 && r === 1} /> : null}
+            </g>
+          );
+        }),
       )}
-      {/* The centre line, paying: three sevens straight across. */}
-      <path d={`M${left - 46} ${top + 14 + cell + (cell - 18) / 2} H${left + cell * 3 - 2}`} stroke="#fff3c4" strokeWidth="9" strokeLinecap="round" />
-      <text x="300" y="712" textAnchor="middle" fontSize="92" fontWeight="900" fontFamily="var(--font-poster)" fill="#fff3c4">
-        FIVE LINES
+      <text x="300" y="690" textAnchor="middle" fontSize="88" fontWeight="900" fontFamily="var(--font-poster)" fill="#fff3c4">
+        HOLD &amp; WIN
+      </text>
+      <text x="300" y="752" textAnchor="middle" fontSize="40" fontWeight="800" fontFamily="var(--font-poster)" fill="#f6eee4" letterSpacing="6" opacity="0.85">
+        NINE MOONS
       </text>
     </>
   );
 }
 
-/** NIGHT PRESS — five drums after dark, chips scattered across them. */
-function NightPress({ id }: { id: string }) {
-  const drums = [0, 1, 2, 3, 4];
+/** SUPERNOVA — a burst over five drums, one of them turned wild. */
+function Supernova({ id }: { id: string }) {
   const w = 92;
   const gap = 14;
   const left = 600 - (w * 5 + gap * 4) - 42;
@@ -162,43 +144,53 @@ function NightPress({ id }: { id: string }) {
     <>
       <rect width="600" height="800" fill="#1a060e" />
       <rect width="600" height="800" fill={`url(#${id}-dots)`} mask={`url(#${id}-fadeMask)`} />
-      {/* The magenta plate, printed off register behind the cabinet. */}
-      <rect x={left - 24} y="198" width={w * 5 + gap * 4 + 48} height="366" rx="32" fill="#ff2e8a" opacity="0.92" />
-      <rect x={left - 36} y="210" width={w * 5 + gap * 4 + 48} height="366" rx="32" fill="#0d0308" />
-      {drums.map((i) => (
-        <Window key={i} x={left - 12 + i * (w + gap)} y={236} w={w} h={314} />
+      {/* The nova, in two plates. */}
+      <polygon points={burst(16, 300, 150, 312, 190)} fill="#ff2e8a" opacity="0.95" />
+      <polygon points={burst(16, 300, 150, 300, 202)} fill="#cc1259" opacity="0.5" style={{ mixBlendMode: "multiply" }} />
+      <circle cx="300" cy="196" r="96" fill="#fff3c4" />
+      <rect x={left - 24} y="300" width={w * 5 + gap * 4 + 48} height="330" rx="32" fill="#ff2e8a" opacity="0.92" />
+      <rect x={left - 36} y="312" width={w * 5 + gap * 4 + 48} height="330" rx="32" fill="#0d0308" />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <rect key={i} x={left - 12 + i * (w + gap)} y={338} width={w} height={278} rx={13} fill={i === 2 ? "#fff3c4" : "#f6eee4"} />
       ))}
-      {/* Three chips, which is what starts the free spins. */}
+      {/* The wild reel: the sun, filling its drum. */}
+      <g transform={`translate(${left - 12 + 2 * (w + gap) + w / 2} 477)`}>
+        <polygon points={burst(12, 44, 30, 0, 0)} fill="#d9173c" />
+        <circle r="28" fill="#1a060e" />
+        <text y="8" textAnchor="middle" fontSize="20" fontWeight="900" fontFamily="var(--font-poster)" fill="#fff3c4">
+          WILD
+        </text>
+      </g>
+      {/* Portals on reels one and five. */}
       {[
-        [left + 34, 300],
-        [left + 34 + 2 * (w + gap), 470],
-        [left + 34 + 4 * (w + gap), 380],
+        [left - 12 + w / 2, 400],
+        [left - 12 + 4 * (w + gap) + w / 2, 550],
       ].map(([cx, cy], i) => (
         <g key={i}>
-          <circle cx={cx} cy={cy} r="40" fill="#d9173c" />
-          <circle cx={cx} cy={cy} r="31" fill="none" stroke="#f6eee4" strokeWidth="9" strokeDasharray="12 12" />
-          <circle cx={cx} cy={cy} r="20" fill="#f6eee4" />
-          <text x={cx} y={cy + 13} textAnchor="middle" fontSize="30" fontWeight="900" fontFamily="var(--font-poster)" fill="#d9173c">
-            P
-          </text>
+          <circle cx={cx} cy={cy} r="36" fill="#d9173c" />
+          <path
+            d={`M${cx} ${cy}m-4 0a4 4 0 1 1 8 0a10 10 0 1 1-20 0a16 16 0 1 1 32 0a22 22 0 1 1-44 0`}
+            fill="none"
+            stroke="#f6eee4"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+          />
         </g>
       ))}
-      <Seven x={left + 34 + (w + gap)} y={420} size={132} fill="#1a060e" />
-      <Seven x={left + 34 + 3 * (w + gap)} y={340} size={132} fill="#1a060e" />
-      <text x="40" y="700" fontSize="118" fontWeight="900" fontFamily="var(--font-poster)" fill="#ff2e8a" letterSpacing="-4">
-        NIGHT
+      <text x="40" y="732" fontSize="104" fontWeight="900" fontFamily="var(--font-poster)" fill="#ff2e8a" letterSpacing="-3">
+        SUPERNOVA
       </text>
-      <text x="40" y="772" fontSize="60" fontWeight="800" fontFamily="var(--font-poster)" fill="#f6eee4" letterSpacing="4" opacity="0.85">
-        20 LINES
+      <text x="44" y="784" fontSize="40" fontWeight="800" fontFamily="var(--font-poster)" fill="#f6eee4" letterSpacing="5" opacity="0.85">
+        20 LINES · FREE SPINS
       </text>
     </>
   );
 }
 
 const ART: Record<MachineId, { draw: (p: { id: string }) => React.JSX.Element; dot: string }> = {
-  cherry: { draw: CherryPress, dot: "#a90e4a" },
-  window: { draw: NineWindow, dot: "#1b2a8f" },
-  night: { draw: NightPress, dot: "#3a0c1c" },
+  cherry: { draw: LunarPress, dot: "#a90e4a" },
+  window: { draw: NineMoons, dot: "#1b2a8f" },
+  night: { draw: Supernova, dot: "#3a0c1c" },
 };
 
 export function Cabinet({ machine, className, align = "center" }: { machine: MachineId; className?: string; align?: "center" | "right" }) {

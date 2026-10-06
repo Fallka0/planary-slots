@@ -80,9 +80,15 @@ export function Fairness({
                   <dd className="mono">{short(last.proof.serverSeed)}</dd>
                 </div>
                 <div>
-                  <dt>Reels stopped at</dt>
-                  <dd className="num">{last.stops.join(" · ")}</dd>
+                  <dt>{last.bought ? "Bonus bought" : "Reels stopped at"}</dt>
+                  <dd className="num">{last.stops ? last.stops.join(" · ") : "no spin — the bonus drew from the seed"}</dd>
                 </div>
+                {last.bonus ? (
+                  <div>
+                    <dt>Bonus game</dt>
+                    <dd className="num">drawn from the same seed, right after the reels</dd>
+                  </div>
+                ) : null}
               </>
             ) : null}
             <div>
@@ -116,7 +122,7 @@ export function Fairness({
           </form>
 
           <a className="fair-link" href={verify} target="_blank" rel="noreferrer">
-            {last?.roundId ? "Check this spin yourself" : "The verifier"}
+            {last?.roundId ? "Check this round yourself" : "The verifier"}
           </a>
         </div>
       ) : null}

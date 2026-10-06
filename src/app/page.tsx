@@ -6,6 +6,7 @@ import { TopBar } from "@/components/TopBar";
 
 /**
  * The parlour: three machines, each sold by its own printed cover.
+ * The quiet one, the middle one and the wild one, side by side.
  *
  * The figure on every cabinet is its real return, not a badge — which is the
  * one thing a row of slot machines never tells you, and the reason this page
@@ -18,10 +19,12 @@ export default function Parlour() {
 
       <main className="parlour">
         <div className="parlour-head">
-          <h1 className="poster">Three machines</h1>
+          <h1 className="poster">Three worlds, one orbit</h1>
           <p>
-            A classic three-reeler, a nine-window grid and a five-reel night machine. Every one of them has its reel strips published and
-            its return printed on the cabinet, and every spin is committed to before you pull the lever.
+            A quiet three-reeler under a full moon with the Orbit Wheel, a nine-window grid of moon coins that lock for Hold &amp; Win, and
+            Supernova, five wild reels with free spins and a multiplier that climbs every spin. Every one of them has its reel strips and its
+            bonus tables published, its return printed on the cabinet, and every round — bonus games included — committed to before you pull
+            the lever.
           </p>
         </div>
 
@@ -41,7 +44,10 @@ export default function Parlour() {
                   <span className="cabinet-caption poster">{machine.caption}</span>
                   <span className="cabinet-blurb">{machine.blurb}</span>
                   <span className="cabinet-foot">
-                    <span className="cabinet-rtp num">{(machine.rtp * 100).toFixed(2)}% back</span>
+                    <span className="cabinet-rtp num">
+                      {(machine.rtp * 100).toFixed(2)}% back
+                      {machine.volatility ? ` · ${machine.volatility === "low" ? "calm" : machine.volatility === "medium" ? "steady" : "wild"}` : ""}
+                    </span>
                     <span className="cabinet-go">
                       Play <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
                     </span>

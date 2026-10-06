@@ -449,7 +449,7 @@ ul, ol { padding: 0; list-style: none; }
 .chip-bet[aria-pressed="true"] { background: var(--magenta-fill); border-color: transparent; color: #fff; }
 .chip-bet:disabled { opacity: 0.45; }
 
-.stake-act { display: flex; align-items: center; gap: 12px; }
+.stake-act { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* The lever: the one large thing on the panel, because it is the one thing
    that costs chips. The stake it will take is printed on it. */
@@ -472,32 +472,6 @@ ul, ol { padding: 0; list-style: none; }
 .lever-cost { display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem; font-weight: 650; opacity: 0.9; }
 .lever[data-free] { background: var(--bulb); color: #2a0710; box-shadow: 0 10px 24px -14px rgba(255, 243, 196, 0.7); }
 
-.auto { position: relative; }
-.auto-menu {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 8px);
-  z-index: 5;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  width: 258px;
-  padding: 12px;
-  border-radius: var(--r-md);
-  background: var(--layer-1);
-  border: 1px solid var(--line-2);
-  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.7);
-}
-.auto-menu button {
-  height: 38px;
-  border-radius: var(--cut-sm);
-  background: var(--layer-2);
-  font-weight: 650;
-  transition: background-color 0.18s ease;
-}
-.auto-menu button:hover { background: var(--layer-3); }
-.auto-menu p { grid-column: 1 / -1; color: var(--text-3); font-size: 0.78rem; }
-.auto-stop { background: var(--layer-2); }
 
 .stake-short { grid-column: 1 / -1; color: var(--magenta); font-size: 0.86rem; }
 
@@ -643,6 +617,368 @@ ul, ol { padding: 0; list-style: none; }
   to { opacity: 1; translate: -50% 0; }
 }
 
+/* ══ The planetary floor ═══════════════════════════ */
+
+/* Orbits printed into the cabinet, turning slowly behind the drums. */
+.cab-orbit {
+  position: absolute;
+  border: 3px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orbit-a { width: 140%; aspect-ratio: 3 / 1; left: -20%; top: 38%; rotate: -12deg; animation: orbit 60s linear infinite; }
+.orbit-b { width: 90%; aspect-ratio: 2.4 / 1; left: 30%; top: 62%; rotate: 18deg; border-style: dashed; animation: orbit 90s linear infinite reverse; }
+.orbit-a::after, .orbit-b::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 30%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bulb);
+}
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+.cab-stage { position: relative; z-index: 1; display: grid; min-height: 0; }
+.cab-stage > * { grid-area: 1 / 1; }
+.stage-reels { display: grid; min-width: 0; }
+.stage-reels[data-covered] { visibility: hidden; }
+.cab[data-spinning] .orbit-a { animation-duration: 8s; }
+
+/* A drum turning longer because the bonus could still start. */
+.reel.is-teasing { outline: 4px solid var(--bulb); outline-offset: 3px; animation: tease 0.45s ease-in-out infinite alternate; }
+@keyframes tease { from { outline-color: var(--bulb); } to { outline-color: color-mix(in srgb, var(--bulb) 30%, transparent); } }
+
+/* The sun fills its reel. */
+.reel-wild {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  background: var(--bulb);
+  color: var(--field);
+  animation: wild-grow 0.5s var(--ease-out) both;
+}
+.reel-wild .pip { width: calc(var(--cell) * 0.9); height: auto; animation: spin-slow 12s linear infinite; }
+.reel-wild-word { font-size: calc(var(--cell) * 0.28); letter-spacing: 0.08em; }
+@keyframes wild-grow { from { clip-path: inset(45% 0 45% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* A winning symbol jumps when its bulb comes on. */
+.cell.is-lit .pip { animation: pip-pop 0.6s var(--ease-out) both; }
+@keyframes pip-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22) rotate(-4deg); }
+  100% { transform: scale(1); }
+}
+.cell { position: relative; }
+.coin-value {
+  position: absolute;
+  bottom: 8%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: calc(var(--cell) * 0.17);
+}
+
+/* ── Bonus games ── */
+
+.bonus {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  animation: bonus-in 0.5s var(--ease-out) both;
+}
+@keyframes bonus-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+.bonus-title { font-size: clamp(1.6rem, 3vw, 2.4rem); letter-spacing: 0.04em; }
+.bonus-read { min-height: 34px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 6px 14px; text-align: center; font-size: 0.9rem; opacity: 0.92; }
+.bonus-read .poster { font-size: 1.8rem; }
+.bonus-read em { font-family: var(--font-ui); font-style: normal; font-size: 0.85rem; font-weight: 600; opacity: 0.8; }
+
+/* The announcement between the reels and the bonus game. */
+.bonus-intro {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 22px;
+  background: var(--bulb);
+  color: var(--field);
+  text-align: center;
+  animation: intro 0.6s var(--ease-out) both;
+}
+.bonus-intro .pip { animation: spin-slow 6s linear infinite; }
+.bonus-intro p { font-size: clamp(2.6rem, 7vw, 5rem); }
+.bonus-intro span { font-weight: 600; }
+@keyframes intro {
+  0% { clip-path: circle(0% at 50% 50%); }
+  100% { clip-path: circle(75% at 50% 50%); }
+}
+
+/* The Orbit Wheel */
+.wheel-stage { position: relative; width: min(100%, 440px); aspect-ratio: 1; }
+.wheel { width: 100%; height: 100%; display: block; }
+.wheel .seg-a { fill: var(--paper); }
+.wheel .seg-b { fill: color-mix(in srgb, var(--paper) 82%, var(--field)); }
+.wheel .seg-c { fill: color-mix(in srgb, #000 30%, var(--field)); }
+.wheel .seg-d { fill: color-mix(in srgb, #000 48%, var(--field)); }
+.wheel .seg-up { fill: var(--cherry); }
+.wheel path { stroke: color-mix(in srgb, #000 55%, var(--field)); stroke-width: 2; }
+.wheel .seg-label { font-size: 17px; fill: var(--ink); }
+.wheel-outer .seg-label { fill: var(--field); font-size: 15px; }
+.wheel .is-hit path { fill: var(--bulb); }
+.wheel .is-hit .seg-label { fill: var(--field); }
+.wheel-hub { fill: var(--paper); }
+.wheel-cap { fill: var(--field); }
+.wheel-pointer { position: absolute; top: -6px; left: 50%; width: 38px; translate: -50% 0; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
+.wheel-pointer path { fill: var(--bulb); stroke: color-mix(in srgb, #000 55%, var(--field)); stroke-width: 2; }
+.wheel-bonus[data-stage="up"] .wheel-outer { animation: ring-flash 0.3s steps(2) 4; }
+@keyframes ring-flash { 50% { opacity: 0.4; } }
+
+/* Hold & Win */
+.hold-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; max-width: 560px; }
+.hold-respins { display: flex; align-items: center; gap: 7px; }
+.hold-respins span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); opacity: 0.4; transition: opacity 0.2s ease, background-color 0.2s ease; }
+.hold-respins span.is-on { background: var(--bulb); border-color: var(--bulb); opacity: 1; }
+.hold-respins em { margin-left: 4px; font-style: normal; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+.hold-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--reels), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  gap: 10px;
+  --cell: clamp(90px, 14.5vw, 168px);
+  padding: 14px;
+  border-radius: 22px;
+  background: color-mix(in srgb, #000 42%, var(--field));
+}
+.hold-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, #000 25%, var(--field));
+  border: 2px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.hold-cell.is-coin { background: var(--paper); border: 0; color: var(--field); }
+.hold-cell .pip { width: 62%; height: auto; }
+.hold-cell.is-fresh { animation: coin-lock 0.55s var(--ease-out) both; }
+@keyframes coin-lock {
+  0% { transform: translateY(-30%) scale(0.6); opacity: 0; }
+  60% { transform: translateY(4%) scale(1.06); opacity: 1; }
+  100% { transform: none; }
+}
+.hold-cell.is-rolling { animation: hold-roll 0.25s linear infinite; }
+@keyframes hold-roll { 50% { background: color-mix(in srgb, #000 10%, var(--field)); } }
+.hold-value {
+  position: absolute;
+  bottom: 9%;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: calc(var(--cell) * 0.16);
+}
+.hold-bonus[data-full] .hold-cell.is-coin { background: var(--bulb); animation: grand 0.6s var(--ease-out) both; }
+@keyframes grand { 50% { transform: scale(1.08) rotate(-3deg); } }
+
+/* Free spins */
+.free-head { display: flex; align-items: center; justify-content: center; gap: 12px 18px; flex-wrap: wrap; }
+.free-count { font-size: 2rem; }
+.free-count em { font-style: normal; font-size: 1.1rem; opacity: 0.7; margin-left: 3px; }
+.free-mult {
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  height: 52px;
+  padding: 0 12px;
+  border-radius: var(--cut);
+  background: var(--bulb);
+  color: var(--field);
+  font-size: 2rem;
+  animation: mult-up 0.5s var(--ease-out) both;
+}
+.free-mult[data-max] { background: var(--cherry); color: #fff; }
+@keyframes mult-up { 0% { transform: scale(1.6) rotate(-8deg); } 100% { transform: none; } }
+.free-total {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  font-size: 1.4rem;
+}
+.free-banner { color: var(--bulb); animation: pip-pop 0.6s var(--ease-out) both; }
+
+/* ── A big win ── */
+
+.celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--field) 82%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  animation: fade-in 0.3s ease both;
+}
+@keyframes fade-in { from { opacity: 0; } }
+.celebrate-burst { position: absolute; width: min(130vmin, 1100px); aspect-ratio: 1; animation: spin-slow 24s linear infinite; }
+.celebrate-burst svg { width: 100%; height: 100%; }
+.celebrate-burst polygon { fill: var(--bulb); opacity: 0.16; }
+.celebrate[data-level="2"] .celebrate-burst polygon { opacity: 0.24; }
+.celebrate[data-level="3"] .celebrate-burst polygon { fill: var(--cherry); opacity: 0.3; }
+.celebrate-bits { position: absolute; inset: 0; }
+.bit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  animation: bit-fly 1.6s var(--ease-out) var(--delay) both;
+}
+.bit-ring { border: 4px solid var(--bulb); border-radius: 50%; }
+.bit-moon { border-radius: 50%; box-shadow: inset 7px -3px 0 0 var(--bulb); }
+.bit-star { background: var(--bulb); clip-path: polygon(50% 0, 61% 38%, 100% 38%, 68% 60%, 79% 100%, 50% 74%, 21% 100%, 32% 60%, 0 38%, 39% 38%); }
+.bit-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--paper); }
+@keyframes bit-fly {
+  from { transform: rotate(var(--angle)) translateY(0) scale(0.3); opacity: 1; }
+  to { transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1); opacity: 0; }
+}
+.celebrate-copy { position: relative; display: grid; justify-items: center; gap: 4px; text-align: center; animation: celebrate-in 0.6s var(--ease-out) both; }
+.celebrate-name { font-size: clamp(2.4rem, 8vw, 6rem); color: var(--bulb); text-shadow: 6px 6px 0 color-mix(in srgb, #000 40%, var(--field)); }
+.celebrate-amount { font-size: clamp(3.4rem, 13vw, 9rem); text-shadow: 7px 7px 0 color-mix(in srgb, #000 40%, var(--field)); }
+.celebrate-x { font-weight: 700; letter-spacing: 0.06em; opacity: 0.85; }
+@keyframes celebrate-in { from { transform: scale(0.5) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ── The panel's tools ── */
+
+.stake-tools { display: flex; align-items: center; gap: 8px; }
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: var(--cut-sm);
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  font-size: 0.86rem;
+  font-weight: 650;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.tool:hover:not(:disabled) { background: var(--layer-2); color: var(--text); }
+.tool:disabled { opacity: 0.45; }
+.tool[aria-pressed="true"], .tool.is-on { background: var(--bulb); border-color: transparent; color: #2a0710; }
+.tool-buy { border-color: rgba(255, 46, 138, 0.45); color: var(--magenta); }
+
+.pop-anchor { position: relative; }
+.pop {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 15;
+  display: grid;
+  gap: 10px;
+  width: 310px;
+  padding: 14px;
+  border-radius: var(--r-md);
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.7);
+  animation: toast-in 0.2s var(--ease-out);
+}
+.pop-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.pop-row { display: flex; gap: 6px; }
+.pop-row > * { flex: 1; }
+.pop-pick { height: 38px; border-radius: var(--cut-sm); background: var(--layer-2); font-weight: 650; }
+.pop-pick:hover:not(:disabled) { background: var(--layer-3); }
+.pop-pick:disabled { opacity: 0.45; }
+.pop-check { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.pop-check input { width: 16px; height: 16px; accent-color: var(--magenta); }
+.pop-field { display: grid; gap: 4px; font-size: 0.8rem; color: var(--text-2); }
+.pop-field select { height: 36px; padding: 0 10px; border-radius: 10px; background: var(--layer-2); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 0.85rem; }
+.pop-note { color: var(--text-3); font-size: 0.78rem; }
+.pop-note strong { color: var(--text); }
+.buy-price { display: flex; align-items: center; gap: 8px; font-size: 2.2rem; }
+.btn-magenta { background: var(--magenta-fill); color: #fff; }
+.btn-magenta:hover:not(:disabled) { background: var(--magenta-fill-hover); }
+
+/* The lever pulses gently while the round is being shown. */
+.lever[data-busy] { animation: lever-busy 0.9s ease-in-out infinite alternate; }
+@keyframes lever-busy { to { background: var(--magenta-fill-hover); } }
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  font-size: 0.88rem;
+}
+.notice svg { flex: none; margin-top: 2px; color: var(--bulb); }
+.notice span { flex: 1; }
+.notice-x { color: var(--text-3); }
+
+/* ── History ── */
+
+.rail { max-height: 340px; }
+.rail-outcome { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.rail-words { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-tag {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--magenta-soft);
+  color: var(--magenta);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rail-tag.is-bought { background: color-mix(in srgb, var(--bulb) 16%, transparent); color: var(--bulb); }
+.rail-money { display: grid; justify-items: end; line-height: 1.15; }
+.rail-staked { color: var(--text-3); font-size: 0.72rem; }
+.rail-when { color: var(--text-3); font-size: 0.72rem; }
+.rail-check { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--text-3); }
+.rail-check:hover { background: var(--layer-2); color: var(--text); }
+.rail-check.is-pending { opacity: 0; }
+.rail li[data-best] { box-shadow: inset 3px 0 0 var(--bulb); }
+
+/* ── Paytable: the bonus game ── */
+
+.pay-bonus { display: grid; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--layer-1); border: 1px solid var(--line); }
+.pay-bonus-head { display: flex; gap: 12px; align-items: center; }
+.pay-bonus-head .pip { flex: none; }
+.pay-bonus-head strong { display: block; font-size: 1.4rem; }
+.pay-bonus-head p { color: var(--text-2); font-size: 0.84rem; }
+.pay-wheel { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: start; }
+.pay-wheel-label { color: var(--text-3); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding-top: 3px; }
+.pay-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pay-chips em { padding: 2px 8px; border-radius: 999px; background: var(--layer-2); font-style: normal; font-size: 0.8rem; font-weight: 650; }
+.pay-chips em[data-up] { background: var(--cherry); color: #fff; }
+.pay-coins tbody th { font-weight: 650; }
+
+/* ── Turbo: everything that was theatre, shorter ── */
+
+.reels[data-turbo] .cell.is-lit .pip { animation-duration: 0.25s; }
+
 /* ── Narrower ──────────────────────────────────── */
 
 @media (max-width: 1180px) {
@@ -658,11 +994,14 @@ ul, ol { padding: 0; list-style: none; }
   .side { grid-template-columns: minmax(0, 1fr); }
   .cab { padding: 18px 16px 16px; border-radius: 24px; }
   .reels { --cell: clamp(46px, 15vw, 96px); gap: 7px; padding: 10px; }
+  .hold-grid { --cell: clamp(78px, 26vw, 120px); gap: 7px; padding: 10px; }
+  .stake-tools { flex-wrap: wrap; }
+  .stake-tools .tool { flex: 1; justify-content: center; }
   .paylines { inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px); }
   .stake { grid-template-columns: minmax(0, 1fr); padding: 16px; }
   .stake-act { flex-direction: column; align-items: stretch; }
   .lever { min-width: 0; }
-  .auto-menu { left: 0; right: 0; width: auto; }
+  .pop { left: 0; right: auto; width: min(320px, calc(100vw - 40px)); }
   .topbar { flex-wrap: wrap; min-height: 0; }
   .topbar-middle { order: 3; width: 100%; margin: 0; }
   .who-chip { display: none; }

@@ -6,7 +6,7 @@
  * never the seed behind it.
  */
 
-import type { MachineId, Pip, ScatterWin, LineWin } from "./slots";
+import type { BonusPlay, LineWin, MachineId, Pip, ScatterWin } from "./slots";
 
 export const VERIFY_URL = "https://casino.planary.ch/verify";
 
@@ -17,7 +17,7 @@ export const CASINO_URL = "https://casino.planary.ch";
 export const SPIN_COOLDOWN_MS = 250;
 
 /** How many results the rail remembers, per machine. */
-export const HISTORY_LENGTH = 24;
+export const HISTORY_LENGTH = 30;
 
 /** The longest autoplay run the machine will accept in one go. */
 export const MAX_AUTO_SPINS = 100;
@@ -35,36 +35,53 @@ export interface Armed {
   nonce: number;
 }
 
-/** Everything the browser is told about a finished spin. */
+/**
+ * Everything the browser is told about a finished round.
+ *
+ * A round is the spin and the whole bonus game it started, if any: the free
+ * spins, the respins, the wheel. All of it came out of one commitment, so all
+ * of it arrives at once, and the screen then plays it out in order.
+ */
 export interface SpinReport {
   machine: MachineId;
   version: number;
   nonce: number;
-  stops: number[];
-  window: Pip[][];
+  /** The bonus was bought: the reels did not turn, and `stops` and `window` are null. */
+  bought: boolean;
+  stops: number[] | null;
+  window: Pip[][] | null;
   lines: LineWin[];
   scatter: ScatterWin | null;
+  /** Reels a wild filled. */
+  expanded: number[];
+  /** What the reels paid, before the bonus game. */
+  basePays: number;
+  bonus: BonusPlay | null;
   staked: number;
+  /** Everything paid back, the bonus game included. */
   returned: number;
-  /** True when the house paid for this one. */
-  free: boolean;
-  /** Free spins left after this one, including any just awarded. */
-  freeSpinsLeft: number;
-  /** One line a person can read: "Three sevens". */
+  /** One line a person can read: "Three novas · 12 free spins". */
   outcome: string;
-  /** The seed is in here, because by now the spin is over. */
+  /** The seed is in here, because by now the round is over. */
   proof: { hash: string; serverSeed: string; clientSeed: string; nonce: number };
   /** The archived round, once the casino has filed it. */
   roundId: string | null;
 }
 
-/** A spin as the rail remembers it. */
+/** A round as the history remembers it. */
 export interface Tally {
   nonce: number;
   staked: number;
   returned: number;
+  /** A free spin the version-1 machine still owed, settled when it was replaced. */
   free: boolean;
+  bought?: boolean;
+  /** Which bonus game this round played, if any. */
+  bonus?: BonusPlay["kind"] | null;
   outcome: string;
+  /** Where to check it, once the casino has filed it. */
+  roundId?: string | null;
+  at?: number;
 }
 
 /** The machine as the browser sees it between spins. */
@@ -76,9 +93,6 @@ export interface MachineState {
   armed: Armed | null;
   /** The player's standing seed, folded into every spin they take. */
   clientSeed: string;
-  /** Free spins waiting, and the stake they will be played at. */
-  freeSpins: number;
-  freeSpinBet: number;
   history: Tally[];
   /**
    * Chips, as the casino last reported them — null when it has not answered
@@ -87,6 +101,11 @@ export interface MachineState {
    * different and much more alarming thing than a machine that is offline.
    */
   balance: number | null;
+  /**
+   * Free spins the version-1 machine still owed when it was replaced, and what
+   * they paid when the machine settled them. Shown once, then cleared.
+   */
+  settled: { spins: number; returned: number } | null;
 }
 
 export interface SpinResponse {
