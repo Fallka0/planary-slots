@@ -1,0 +1,656 @@
+/* ══════════════════════════════════════════════════
+   PLANARY SLOTS — three machines, printed not rendered.
+
+   Same press as the rest of Planary: tonal value steps instead
+   of shadows, cream type, condensed poster lettering, the
+   14/5/14/5 ticket cut on every button. Its own ink set,
+   because every table in this casino gets its own: plum-black
+   for the shell, hot magenta for the one accent, and a pale
+   bulb cream for the lines that light up.
+
+   The cabinet on a machine page takes that machine's own field
+   and ink — the field belongs to the cover, never to the
+   chrome around it.
+   ══════════════════════════════════════════════════ */
+
+:root {
+  --bg: #19050f;
+  --shell: #27091b;
+  --layer-1: #360f26;
+  --layer-2: #471532;
+  --layer-3: #5a1c40;
+  --line: rgba(255, 214, 230, 0.09);
+  --line-2: rgba(255, 214, 230, 0.17);
+
+  --paper: #f6eee4;
+  --text: #fbeef2;
+  --text-2: rgba(251, 238, 242, 0.74);
+  --text-3: rgba(251, 238, 242, 0.54);
+
+  /* The one accent. Nothing else in the shell gets a colour. */
+  --magenta: #ff2e8a;
+  --magenta-fill: #cc1259;
+  --magenta-fill-hover: #b30e4c;
+  --magenta-soft: rgba(255, 46, 138, 0.14);
+  /* A lit payline: the light behind the glass, not a metal. */
+  --bulb: #fff3c4;
+  /* The house chip is always the house red, on every table. */
+  --cherry: #d9173c;
+
+  /* Set per machine by the page; these are the parlour's defaults. */
+  --field: #cc1259;
+  --ink: #fbf1ea;
+  --dot: #a90e4a;
+
+  --r-lg: 24px;
+  --r-md: 18px;
+  --r-sm: 12px;
+  --cut: 14px 5px 14px 5px;
+  --cut-lg: 16px 6px 16px 6px;
+  --cut-sm: 11px 4px 11px 4px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { scrollbar-color: var(--layer-2) var(--bg); caret-color: var(--magenta); }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  color: var(--text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* The anodized finish, in this game's ink: a slow tonal sweep under a fine grain. */
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.82  0 0 0 0 0.9  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    linear-gradient(162deg, #4d0f33 0%, #330a21 32%, var(--bg) 64%, #120308 100%);
+  background-attachment: fixed;
+}
+
+::selection { background: rgba(255, 46, 138, 0.38); color: #fff; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+button:disabled { cursor: not-allowed; }
+input { font: inherit; }
+h1, h2, h3, p, ul, ol, dl, dd { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+
+/* The poster voice: anything that names a machine, a section or a number
+   somebody is meant to read across the room. */
+.poster {
+  font-family: var(--font-poster), var(--font-ui), sans-serif;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Buttons: one silhouette, the die-cut ticket ── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--cut);
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s var(--ease-out), opacity 0.18s ease;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; }
+.btn-sm { height: 34px; padding: 0 14px; font-size: 0.84rem; border-radius: var(--cut-sm); }
+.btn-quiet { background: var(--layer-2); border-color: var(--line-2); color: var(--text); }
+.btn-quiet:hover:not(:disabled) { background: var(--layer-3); }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--cut-sm);
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.icon-btn:hover:not(:disabled) { background: var(--layer-1); color: var(--text); }
+
+/* ── Shell ─────────────────────────────────────── */
+
+.app { min-height: 100dvh; display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+
+.signing-in { display: grid; place-content: center; justify-items: center; gap: 16px; min-height: 100dvh; color: var(--text-3); }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px 16px;
+  border-radius: var(--r-lg);
+  background: var(--shell);
+  border: 1px solid var(--line);
+}
+.back {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--cut-sm);
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.back:hover { background: var(--layer-1); color: var(--text); }
+.brand { display: flex; align-items: center; gap: 11px; }
+.brand-copy { display: flex; flex-direction: column; gap: 2px; line-height: 1.05; }
+.brand-name { font-size: 1.32rem; }
+.brand-sub { color: var(--text-3); font-size: 0.74rem; font-weight: 500; }
+.topbar-middle { display: flex; align-items: center; gap: 10px; margin: 0 auto; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.machine-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 14px 0 10px;
+  border-radius: var(--cut);
+  background: var(--layer-1);
+  border: 1px solid var(--line);
+  font-weight: 650;
+}
+.balance-label { color: var(--text-3); font-size: 0.82rem; font-weight: 500; }
+.skeleton { width: 148px; height: 42px; border-radius: var(--cut); background: var(--layer-1); }
+.who-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--layer-1);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 0.86rem;
+  font-weight: 500;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── The parlour ───────────────────────────────── */
+
+.parlour { width: 100%; max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; padding: 12px 0 40px; }
+.parlour-head { display: grid; gap: 12px; }
+.parlour-head h1 { font-size: clamp(2.8rem, 6vw, 4.4rem); line-height: 0.86; }
+.parlour-head p { max-width: 62ch; color: var(--text-2); }
+
+.cabinets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.cabinet > a {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--field);
+  color: var(--ink);
+  transition: transform 0.4s var(--ease-out);
+}
+.cabinet > a:hover { transform: translateY(-3px); }
+.cabinet-art { display: block; aspect-ratio: 3 / 4; overflow: hidden; }
+.cabinet-art svg { display: block; width: 100%; height: 100%; transition: transform 0.6s var(--ease-out); }
+.cabinet > a:hover .cabinet-art svg { transform: scale(1.05); }
+.cabinet-copy { display: grid; gap: 7px; align-content: start; padding: 18px; }
+.cabinet-name { font-size: 2.1rem; }
+.cabinet-caption { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.14em; opacity: 0.85; }
+.cabinet-blurb { font-size: 0.9rem; opacity: 0.86; max-width: 38ch; }
+.cabinet-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.cabinet-rtp {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.cabinet-go { display: inline-flex; align-items: center; gap: 6px; font-weight: 650; font-size: 0.92rem; }
+
+.parlour-note { max-width: 74ch; color: var(--text-3); font-size: 0.9rem; }
+
+/* ── The floor ─────────────────────────────────── */
+
+.floor {
+  flex: 1;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+  padding-bottom: 32px;
+}
+.play { display: grid; gap: 16px; min-width: 0; }
+
+/* The cabinet: the machine's own field, printed with a halftone and a grain. */
+.cab {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 18px;
+  padding: 26px 26px 22px;
+  border-radius: 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, var(--dot) 0 3.2px, transparent 3.6px) 0 0 / 14px 14px,
+    var(--field);
+  color: var(--ink);
+}
+.cab::before {
+  /* The dot screen fades in toward the bottom, as on every cover here. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--field) 0%, color-mix(in srgb, var(--field) 86%, #000) 100%);
+}
+.cab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+/* The line count, set enormous in two plates slightly out of register. */
+.cab-print { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.cab-plate {
+  position: absolute;
+  right: -2%;
+  top: 50%;
+  font-family: var(--font-poster);
+  font-weight: 900;
+  font-size: min(58vh, 460px);
+  line-height: 0.78;
+  transform: translateY(-52%);
+}
+.plate-a { color: var(--ink); opacity: 0.1; translate: 13px 11px; }
+.plate-b { color: #000; opacity: 0.16; mix-blend-mode: multiply; }
+
+.cab-head { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.cab-head h1 { font-size: clamp(2rem, 3.4vw, 2.9rem); }
+.cab-caption { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.14em; opacity: 0.82; }
+
+/* ── The drums ─────────────────────────────────── */
+
+.reels {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--reels), minmax(0, 1fr));
+  gap: 10px;
+  --cell: clamp(62px, 9.2vw, 108px);
+  padding: 14px;
+  border-radius: 22px;
+  background: color-mix(in srgb, #000 42%, var(--field));
+}
+.reel {
+  position: relative;
+  height: calc(var(--rows) * var(--cell));
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--paper);
+}
+/* The glass: a single soft shoulder top and bottom, no gloss. */
+.reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.14) 100%);
+}
+
+.drum { display: grid; grid-auto-rows: var(--cell); will-change: transform; }
+.drum[data-stage="roll"] { animation: drum-roll 760ms linear infinite; }
+.drum[data-stage="land"] { transform: translateY(0); }
+.drum[data-stage="land"].is-moving {
+  transform: translateY(calc(var(--spun) * var(--cell) * -1));
+  transition: transform var(--land-ms) cubic-bezier(0.16, 0.86, 0.22, 1) var(--delay);
+}
+@keyframes drum-roll {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--spun) * var(--cell) * -1)); }
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  border-bottom: 1px solid rgba(42, 7, 16, 0.1);
+  color: var(--field);
+}
+.cell .pip { width: 72%; height: 72%; }
+.cell.is-blank .pip { width: 0; height: 0; }
+/* A cell that paid: the bulb behind it comes on. */
+.cell.is-lit { background: var(--bulb); animation: bulb 0.5s var(--ease-out); }
+@keyframes bulb {
+  from { background: var(--paper); }
+  to { background: var(--bulb); }
+}
+
+.paylines { position: absolute; inset: 14px; z-index: 2; pointer-events: none; }
+.paylines polyline {
+  fill: none;
+  stroke: var(--bulb);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+/* ── What just happened ────────────────────────── */
+
+.cab-read { position: relative; z-index: 1; min-height: 52px; display: grid; gap: 8px; align-content: center; }
+.cab-win { display: flex; align-items: baseline; gap: 12px; font-size: 2.4rem; }
+.cab-win em { font-family: var(--font-ui); font-size: 0.82rem; font-weight: 600; font-style: normal; letter-spacing: 0.05em; opacity: 0.84; }
+.cab-nothing, .cab-idle { font-size: 0.92rem; opacity: 0.68; }
+.cab-free {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+/* ── Stake, lever, autoplay ────────────────────── */
+
+.stake {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 22px;
+  border-radius: var(--r-lg);
+  background: var(--shell);
+  border: 1px solid var(--line);
+}
+.stake-bets { display: grid; gap: 9px; min-width: 0; }
+.stake-label { display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.stake-label em { font-style: normal; color: var(--text-2); letter-spacing: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip-bet {
+  height: 36px;
+  min-width: 48px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  font-size: 0.88rem;
+  font-weight: 650;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.chip-bet:hover:not(:disabled) { background: var(--layer-2); color: var(--text); }
+.chip-bet[aria-pressed="true"] { background: var(--magenta-fill); border-color: transparent; color: #fff; }
+.chip-bet:disabled { opacity: 0.45; }
+
+.stake-act { display: flex; align-items: center; gap: 12px; }
+
+/* The lever: the one large thing on the panel, because it is the one thing
+   that costs chips. The stake it will take is printed on it. */
+.lever {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  min-width: 190px;
+  padding: 12px 30px;
+  border-radius: var(--cut-lg);
+  background: var(--magenta-fill);
+  color: #fff;
+  box-shadow: 0 10px 24px -12px rgba(255, 46, 138, 0.8);
+  transition: background-color 0.18s ease, transform 0.18s var(--ease-out), opacity 0.18s ease;
+}
+.lever:hover:not(:disabled) { background: var(--magenta-fill-hover); }
+.lever:active:not(:disabled) { transform: scale(0.97); }
+.lever:disabled { opacity: 0.45; box-shadow: none; }
+.lever-word { font-size: 1.6rem; }
+.lever-cost { display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem; font-weight: 650; opacity: 0.9; }
+.lever[data-free] { background: var(--bulb); color: #2a0710; box-shadow: 0 10px 24px -14px rgba(255, 243, 196, 0.7); }
+
+.auto { position: relative; }
+.auto-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 258px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.7);
+}
+.auto-menu button {
+  height: 38px;
+  border-radius: var(--cut-sm);
+  background: var(--layer-2);
+  font-weight: 650;
+  transition: background-color 0.18s ease;
+}
+.auto-menu button:hover { background: var(--layer-3); }
+.auto-menu p { grid-column: 1 / -1; color: var(--text-3); font-size: 0.78rem; }
+.auto-stop { background: var(--layer-2); }
+
+.stake-short { grid-column: 1 / -1; color: var(--magenta); font-size: 0.86rem; }
+
+.floor-other { color: var(--text-3); font-size: 0.88rem; }
+.floor-other a { color: var(--text-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.floor-other a:hover { color: var(--text); }
+
+/* ── Panels ────────────────────────────────────── */
+
+.side { display: grid; gap: 16px; }
+.panel { border-radius: var(--r-lg); background: var(--shell); border: 1px solid var(--line); overflow: hidden; }
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px 22px;
+  text-align: left;
+}
+.panel-head h2 { flex: 1; font-size: 1.7rem; }
+.panel-chevron { color: var(--text-3); transition: transform 0.22s var(--ease-out); }
+.panel.is-open .panel-chevron { transform: rotate(180deg); }
+.panel-body { display: grid; gap: 16px; padding: 0 22px 22px; }
+.panel-title { padding: 18px 22px 0; font-size: 1.7rem; }
+
+.pays-rtp {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: var(--magenta-soft);
+  border: 1px solid rgba(255, 46, 138, 0.4);
+  color: var(--magenta);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pay-grid { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.pay-grid th, .pay-grid td { padding: 7px 4px; text-align: right; }
+.pay-grid thead th { color: var(--text-3); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.pay-grid tbody th {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  font-weight: 600;
+}
+.pay-grid tbody th .pip { flex: none; }
+.pay-grid tbody tr + tr th, .pay-grid tbody tr + tr td { border-top: 1px solid var(--line); }
+.pay-grid td { font-weight: 650; }
+.pay-none { color: var(--text-3); }
+.pay-odds { color: var(--text-3); font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+
+.pay-scatter { display: flex; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--layer-1); border: 1px solid var(--line); }
+.pay-scatter .pip { flex: none; }
+.pay-scatter strong { display: block; font-size: 0.9rem; }
+.pay-scatter p { color: var(--text-2); font-size: 0.84rem; }
+
+.pay-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pay-facts > div { padding: 10px 12px; border-radius: var(--r-sm); background: var(--layer-1); }
+.pay-facts dt { color: var(--text-3); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.pay-facts dd { font-size: 0.95rem; font-weight: 650; }
+
+.pay-note, .fair-note, .fair-hint { color: var(--text-3); font-size: 0.82rem; }
+.pay-note { max-width: 70ch; }
+
+/* ── Fairness ──────────────────────────────────── */
+
+.fair-proof { display: grid; gap: 1px; border-radius: var(--r-md); overflow: hidden; background: var(--line); }
+.fair-proof > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 13px; background: var(--layer-1); }
+.fair-proof dt { color: var(--text-3); font-size: 0.79rem; white-space: nowrap; }
+.fair-proof dd { text-align: right; word-break: break-all; font-weight: 600; font-size: 0.84rem; }
+
+.fair-seed { display: grid; gap: 7px; }
+.fair-seed label { color: var(--text-3); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.fair-seed-row { display: flex; gap: 8px; }
+.fair-seed input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 13px;
+  border-radius: 14px;
+  background: var(--layer-1);
+  border: 1px solid var(--line-2);
+  color: var(--text);
+  font-size: 0.88rem;
+}
+.fair-seed input::placeholder { color: var(--text-3); }
+.fair-seed input:focus { border-color: rgba(255, 46, 138, 0.5); outline: none; }
+.fair-seed input:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+
+.fair-link {
+  justify-self: start;
+  color: var(--text-2);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 3px;
+}
+.fair-link:hover { color: var(--text); }
+
+/* ── The rail ──────────────────────────────────── */
+
+.rail-panel { padding-bottom: 18px; }
+.rail { display: grid; gap: 1px; margin: 14px 22px 12px; border-radius: var(--r-md); overflow: hidden; background: var(--line); max-height: 280px; overflow-y: auto; }
+.rail li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--layer-1); font-size: 0.85rem; }
+.rail-nonce { color: var(--text-3); font-size: 0.76rem; min-width: 38px; }
+.rail-outcome { flex: 1; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-amount { font-weight: 650; color: var(--text-3); }
+.rail li[data-won] .rail-amount { color: var(--bulb); }
+.rail-empty { padding: 14px 22px 0; color: var(--text-3); font-size: 0.86rem; }
+.rail-sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 22px; color: var(--text-3); font-size: 0.82rem; }
+.rail-sum strong { font-size: 1rem; color: var(--text-2); }
+.rail-sum strong[data-up] { color: var(--bulb); }
+.rail-sum strong[data-down] { color: var(--magenta); }
+
+/* ── The one thing that floats ─────────────────── */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 12px 18px;
+  translate: -50% 0;
+  border-radius: var(--r-md);
+  background: var(--magenta-soft);
+  border: 1px solid rgba(255, 46, 138, 0.4);
+  backdrop-filter: blur(14px);
+  color: var(--text);
+  font-size: 0.88rem;
+  animation: toast-in 0.26s var(--ease-out);
+}
+@keyframes toast-in {
+  from { opacity: 0; translate: -50% 10px; }
+  to { opacity: 1; translate: -50% 0; }
+}
+
+/* ── Narrower ──────────────────────────────────── */
+
+@media (max-width: 1180px) {
+  .floor { grid-template-columns: minmax(0, 1fr); }
+  .side { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .side .rail-panel { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .app { padding: 10px; gap: 12px; }
+  .cabinets { grid-template-columns: minmax(0, 1fr); }
+  .parlour-head h1 { font-size: 2.6rem; }
+  .side { grid-template-columns: minmax(0, 1fr); }
+  .cab { padding: 18px 16px 16px; border-radius: 24px; }
+  .reels { --cell: clamp(54px, 17vw, 96px); gap: 7px; padding: 10px; }
+  .paylines { inset: 10px; }
+  .stake { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .stake-act { flex-direction: column; align-items: stretch; }
+  .lever { min-width: 0; }
+  .auto-menu { left: 0; right: 0; width: auto; }
+  .topbar { flex-wrap: wrap; min-height: 0; }
+  .topbar-middle { order: 3; width: 100%; margin: 0; }
+  .who-chip { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

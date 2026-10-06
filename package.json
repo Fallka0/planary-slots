@@ -1,0 +1,31 @@
+{
+  "name": "planary-slots",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3006",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "machine": "wrangler dev --port 2002",
+    "machine:deploy": "wrangler deploy",
+    "rtp": "node scripts/rtp.mjs",
+    "fair": "node scripts/fair-test.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.47.0",
+    "next": "16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260918.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "typescript": "^5",
+    "wrangler": "^4.135.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "planary-slots",
+  "main": "machine/worker.ts",
+  "compatibility_date": "2025-09-01",
+  "durable_objects": {
+    "bindings": [{ "name": "Machine", "class_name": "Machine" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Machine"] }],
+  "services": [{ "binding": "CASINO", "service": "planary-casino-api" }],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://slots.planary.ch,https://casino.planary.ch"
+  }
+}
