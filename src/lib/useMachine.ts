@@ -42,7 +42,7 @@ export function useMachine(cabinet: Machine) {
         return;
       }
       setState(answer);
-      if (answer.balance) setBalance(answer.balance);
+      if (typeof answer.balance === "number") setBalance(answer.balance);
       setPhase("idle");
     });
     return () => {
@@ -69,7 +69,7 @@ export function useMachine(cabinet: Machine) {
     }
     setResult(answer.spin);
     setState(answer.state);
-    setBalance(answer.balance);
+    if (typeof answer.balance === "number") setBalance(answer.balance);
     // The reels are turning: `settled()` lets go of the result when they stop.
     setPhase("reading");
   }, [phase, cabinet.id, lineBet, accessToken, setBalance]);

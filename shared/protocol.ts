@@ -80,14 +80,19 @@ export interface MachineState {
   freeSpins: number;
   freeSpinBet: number;
   history: Tally[];
-  /** Chips, as the casino last reported them. */
-  balance: number;
+  /**
+   * Chips, as the casino last reported them — null when it has not answered
+   * yet. Never 0 as a stand-in for "unknown": a wallet the machine cannot
+   * reach would otherwise read on screen as a player with nothing, which is a
+   * different and much more alarming thing than a machine that is offline.
+   */
+  balance: number | null;
 }
 
 export interface SpinResponse {
   spin: SpinReport;
   state: MachineState;
-  balance: number;
+  balance: number | null;
 }
 
 export interface Refusal {

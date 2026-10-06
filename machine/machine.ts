@@ -36,6 +36,8 @@ interface Session {
   /** Per machine: spins played, the armed commitment, free spins owing, the rail. */
   machines: Record<string, Reel | undefined>;
   balance: number;
+  /** False until the casino wallet has actually answered about this player. */
+  walletKnown: boolean;
   /** Idempotency: the last spin, and the key the browser sent with it. */
   lastKey: string | null;
   lastReport: SpinReport | null;
@@ -50,7 +52,7 @@ interface Reel {
   history: Tally[];
 }
 
-const BLANK: Session = { clientSeed: "", machines: {}, balance: 0, lastKey: null, lastReport: null, lastSpinAt: 0 };
+const BLANK: Session = { clientSeed: "", machines: {}, balance: 0, walletKnown: false, lastKey: null, lastReport: null, lastSpinAt: 0 };
 
 function freshReel(): Reel {
   return { spins: 0, armed: null, freeSpins: 0, freeSpinBet: 0, history: [] };
@@ -103,6 +105,7 @@ export class Machine extends DurableObject<Env> {
     try {
       const res = await this.casino<{ balance: number; blocked: string | null }>("/internal/wallet", { userId, name });
       this.session.balance = res.balance;
+      this.session.walletKnown = true;
       return { blocked: res.blocked ?? null };
     } catch {
       return { blocked: null };
@@ -225,6 +228,7 @@ export class Machine extends DurableObject<Env> {
         return { error: "Chips are unavailable right now. Try again in a moment." };
       }
       this.session.balance = taken.balance;
+      this.session.walletKnown = true;
       if (!taken.ok) {
         reel.armed = armed;
         return { error: taken.reason ?? "Not enough chips for that stake." };
@@ -246,6 +250,7 @@ export class Machine extends DurableObject<Env> {
           ref: cabinet.id,
         });
         this.session.balance = paid.balance;
+        this.session.walletKnown = true;
       } catch (error) {
         // The spin stands and the player is owed: louder than a thrown error,
         // because a dropped payout has to be findable in the logs.
@@ -386,7 +391,7 @@ export class Machine extends DurableObject<Env> {
       freeSpins: reel.freeSpins,
       freeSpinBet: reel.freeSpinBet,
       history: reel.history,
-      balance: this.session.balance,
+      balance: this.session.walletKnown ? this.session.balance : null,
     };
   }
 }
