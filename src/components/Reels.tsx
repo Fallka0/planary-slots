@@ -58,13 +58,21 @@ export function Reels({
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  // The lever has been pulled: start turning, and forget the last result.
+  // The lever has been pulled: start turning.
+  //
+  // The last result stays on the drums until a new one lands, because a spin
+  // can be refused — not enough chips, or the machine asking for a moment —
+  // and when it is, nothing further ever arrives. Without the second branch
+  // here the drums would turn forever on a spin that never happened, which is
+  // the worst thing a machine can do: it looks exactly like one deciding.
   useEffect(() => {
-    if (!rolling) return;
-    setLanded(null);
-    setMoving(false);
-    setStage(reduced ? "rest" : "roll");
-  }, [rolling, reduced]);
+    if (rolling) {
+      setMoving(false);
+      setStage(reduced ? "rest" : "roll");
+      return;
+    }
+    if (!result) setStage("rest");
+  }, [rolling, reduced, result]);
 
   // The answer is in. Reduced motion skips straight to it.
   useEffect(() => {
@@ -182,7 +190,7 @@ export function Reels({
       {/* The lines that paid. Two plates, like everything else printed here:
           the cells they cross are already lit cream, so a cream line alone
           would vanish on them, and a dark one would vanish in the gaps. */}
-      {landed?.lines.length ? (
+      {stage === "rest" && landed?.lines.length ? (
         <svg className="paylines" viewBox={`0 0 ${reels * 10} ${rows * 10}`} preserveAspectRatio="none" aria-hidden="true">
           {landed.lines.map((win) => {
             const rowsOf = cabinet.lines[win.line];

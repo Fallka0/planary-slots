@@ -322,7 +322,12 @@ ul, ol { padding: 0; list-style: none; }
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(var(--reels), minmax(0, 1fr));
+  /* Columns are exactly one cell wide, never a fraction of whatever space is
+     going. A 1fr column compresses when the stage is narrow while the reel's
+     height stays pinned to --cell, and the windows quietly turn into tall
+     letterboxes — which is what a drum must never look like. */
+  grid-template-columns: repeat(var(--reels), var(--cell));
+  justify-content: center;
   gap: 10px;
   --cell: clamp(62px, 9vw, 130px);
   /* Wide enough for square windows and no wider: a column stretched to fill
